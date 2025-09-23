@@ -1,0 +1,12 @@
+; DO NOT EDIT (unless you know what you are doing)
+;
+; This subdirectory is a git "subrepo", and this file is maintained by the
+; git-subrepo command. See https://github.com/ingydotnet/git-subrepo#readme
+;
+[subrepo]
+	remote = git@github.com:fraillt/bitsery.git
+	branch = master
+	commit = ee992d8b5782e41792e4810c5b00ad4625783427
+	parent = fe9bf99e96394790fcd65a6d196ae83ae28a5854
+	method = merge
+	cmdver = 0.4.9
