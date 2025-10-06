@@ -32,7 +32,7 @@ def read_from_socket():
                     print("Connection closed by peer.")
                     break
                 # Decode the received bytes and print to console
-                print(data, end='')
+                print(len(data), data, end='\n')
 
         except ConnectionRefusedError:
             print(f"Error: Connection refused. Is OpenOCD running and is the RTT server enabled on port {PORT}?")
