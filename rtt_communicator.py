@@ -25,14 +25,18 @@ def read_from_socket():
 
             # Read data in a loop
             while True:
-                # Receive data in chunks of 1024 bytes
-                data = s.recv(1024)
-                if not data:
-                    # If no data is received, the connection is closed
-                    print("Connection closed by peer.")
-                    break
-                # Decode the received bytes and print to console
-                print(len(data), data, end='\n')
+                # Since the data is cobs encoded, we can read till 0x00
+                data = bytearray()
+                while True:
+                    byte = s.recv(1)
+                    if not byte:
+                        print("Connection closed by the server.")
+                        return
+                    if byte == b'\x00':
+                        break
+                    data.extend(byte)
+                if data:
+                    print(f"{data} {len(data)}")  # Here you can decode the COBS data if needed
 
         except ConnectionRefusedError:
             print(f"Error: Connection refused. Is OpenOCD running and is the RTT server enabled on port {PORT}?")
