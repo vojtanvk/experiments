@@ -74,7 +74,8 @@ PYBIND11_MODULE(RTTMetricsDeserializer, ra, py::mod_gil_not_used()) {
         [](const accelerometer::RawAcceleration &self) { return self.val[2]; },
         [](accelerometer::RawAcceleration &self, float v) { self.val[2] = v; })
         .def("__repr__", [](const accelerometer::RawAcceleration &self) {
-            return "<RawAcceleration x=" + std::to_string(self.val[0]) + " y=" + std::to_string(self.val[1]) + " z=" + std::to_string(self.val[2]) + ">";
+            return py::str("<RawAcceleration x={:.3f} y={:.3f} z={:.3f}>")
+                .format(self.val[0], self.val[1], self.val[2]);
         });
     
     py::enum_<rtt_metrics::MetricType>(ra, "MetricType")
