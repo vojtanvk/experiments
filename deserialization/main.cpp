@@ -58,7 +58,7 @@ rtt_metrics::MetricType get_type() {
 
 uint32_t get_timestamp() {
     assert(current_data.size() >= 5);
-    return (current_data[1] << 24) + (current_data[2] << 16) + (current_data[3] << 8) + (current_data[4]);
+    return (current_data[1] << 0) + (current_data[2] << 8) + (current_data[3] << 16) + (current_data[4] << 24);
 }
 
 PYBIND11_MODULE(RTTMetricsDeserializer, ra, py::mod_gil_not_used()) {
