@@ -7,6 +7,9 @@ import socket
 sys.path.append("build/")
 
 import RTTMetricsDeserializer as des
+import rtt_plotter as plotter
+import pandas as pd
+import numpy as np
 
 HOST = 'localhost'
 PORT = 60002
@@ -24,7 +27,7 @@ def arguments():
     return parser.parse_args()
 
 def read_from_socket():
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s, open("socket_ouput.bin", "wb") as f:
         try:
             # Connect the socket to the server's address
             s.connect((HOST, PORT))
@@ -43,35 +46,60 @@ def read_from_socket():
                         break
                     data.extend(byte)
                 if data:
-                    print(f"{data} {len(data)}")  # Here you can decode the COBS data if needed
-
+                    des.deserialize(data)
+                    timestamp = des.get_timestamp()
+                    res = des.read_raw_acceleration()
+                    print(des.get_type(), timestamp, res.x, res.y, res.z)
+                    f.write(data + b'\0')  # Write the received data to file with delimiter
+                    
         except ConnectionRefusedError:
             print(f"Error: Connection refused. Is OpenOCD running and is the RTT server enabled on port {PORT}?")
         except Exception as e:
             print(f"An error occurred: {e}")
 
 def read_form_file(filepath: str):
+    timestamps = []
+    x_values = [] 
+    y_values = []
+    z_values = []
     with open(filepath, "rb") as f:
         try:
-            while(True):
-                # TODO this needs extensive rework to be usable in the future
-                # For now it works only with accelerometer data (1 byte COBS OVERHEAD | 1 byte TYPE | 4 bytes TIMESTAMP | 6 bytes DATA)
-                packet = bytearray(f.read(12))
-                # print(packet)
+            while True:
+                packet = bytearray()
+                b = f.read(1)
+    
+                if not b:
+                    break
+    
+                # read whole packet            
+                while(b != b'\0'):
+                    packet.extend(b)
+                    b = f.read(1)
                 des.deserialize(packet)
-                print(des.get_type())
-                print(des.get_timestamp())
+                timestamp = des.get_timestamp()
+                timestamps.append(timestamp)
+                
                 res = des.read_raw_acceleration()
-                print(res.x)
                 
-                
-            
+                print(des.get_type(), timestamp, res.x, res.y, res.z)
+                x_values.append(res.x)
+                y_values.append(res.y)
+                z_values.append(res.z)
+                # print(res.x)  
             
         except Exception as e:
             print(f"An error occured: {e}")
 
-def deserialize_packet(packet: bytearray):
-    ...
+    datafr = pd.DataFrame({
+        "Type": "RawAcceleration",
+        "Timestamp": timestamps,
+        "X": x_values,
+        "Y": y_values,
+        "Z": z_values
+    })
+    
+    plotter.plot_sensor_data(datafr)
+
 
 def main():
     
